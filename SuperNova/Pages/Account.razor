@@ -1,0 +1,41 @@
+﻿@page "/Account"
+@inject ProtectedSessionStorage ProtectedSessionStore
+
+<h3>Account</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Url</th>
+            <th scope="col">Username</th>
+            <th scope="col">Password</th>
+            <th scope="col">Comment</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var account in accounts)
+        {
+            <tr>
+                <td>@account.Name</td>
+                <td><a target="_blank" rel="noopener noreferrer" href="@account.Url">Link</a></td>
+                <td>@account.UserName</td>
+                <td>@account.Password</td>
+                <td>@account.Comment</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+
+    List<Models.Account> accounts = new List<Models.Account>();
+    AccountService accountService;
+
+    protected override async Task OnInitializedAsync()
+    {
+        accountService = new AccountService();
+        accountService.AuthorizationToken = await ProtectedSessionStore.GetAsync<Models.Login>(Constants.AUTHENTICATIONTOKEN);
+        accounts = await accountService.GetAccounts();
+    }
+}

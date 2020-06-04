@@ -1,0 +1,52 @@
+﻿@page "/Login"
+@using SuperNova.Models;
+@using SuperNova.Services;
+
+<div>
+    <h3>Login</h3>
+    <hr />
+    Login Id
+    <br />
+    <input type="text" @bind="login.LoginId" class="form-control w-100" />
+    <br />
+    Password
+    <br />
+    <input type="password" @bind="login.Password" class="form-control w-100" />
+    <hr />
+    <button @onclick="LoginAction" class="btn btn-primary">Login</button>
+</div>
+
+@if (IsValidToken == false)
+{
+    <hr />
+    <p class="alert alert-danger">Invalid Username or Password</p>
+}
+
+
+@code {
+
+    private Models.Login login;
+    private LoginService authService;
+    private bool? IsValidToken = null;
+
+
+    [Parameter]
+    public EventCallback<Models.Login> AuthenitcationEvent { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        login = new Models.Login();
+        authService = new LoginService();
+    }
+
+    private async Task LoginAction()
+    {
+        var authLogin = await authService.SetAuthenticationToken(login);
+        IsValidToken = authLogin == null ? false : true;
+        if (IsValidToken == true)
+        {
+            await AuthenitcationEvent.InvokeAsync(authLogin);
+        }
+    }
+
+}

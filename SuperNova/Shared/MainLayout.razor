@@ -1,0 +1,85 @@
+﻿@inherits LayoutComponentBase
+@inject ProtectedSessionStorage ProtectedSessionStore
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime;
+@using SuperNova.Helpers
+
+<div class="sidebar">
+    <NavMenu IsAuthenticated="@IsAuthenticatedUser" LogoutEvent="InvokeLogoutEvent" />
+</div>
+
+<div class="main">
+    <div class="top-row px-4" style="background-color:#001144; color:lightcyan;">
+        <a @onclick="ShowAboutDialog">About</a>
+        @*&nbsp;
+        &nbsp;
+        <img style="width:33px; height:33px;" src="/images/icon.png" />*@
+    </div>
+    @if (!IsRunFirstTime)
+    {
+    <div class="content px-4">
+        @if (IsAuthenticatedUser)
+        {
+            @Body
+        }
+        else
+        {
+            <SuperNova.Pages.Login AuthenitcationEvent="InvokeAuthenticateEvent" />
+        }
+    </div>
+    }
+</div>
+
+@code{
+    public bool IsAuthenticatedUser = false;
+    public bool IsRunFirstTime = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var login = await ProtectedSessionStore.GetAsync<Login>(Constants.AUTHENTICATIONTOKEN);
+            await InvokeAuthenticateEvent(login);
+            IsRunFirstTime = false;
+        }
+        catch (Exception)
+        {
+            // Ignore as thre are two callbacks by design
+        }
+    }
+
+    private async Task InvokeAuthenticateEvent(Models.Login login)
+    {
+        if (login != null && !String.IsNullOrEmpty(login.SessionKey))
+        {
+            IsAuthenticatedUser = true;
+            login.Password = "";
+            await ProtectedSessionStore.SetAsync(Constants.AUTHENTICATIONTOKEN, login);
+            NavigationManager.NavigateTo(Constants.FIRSTPAGETONAVIGATE_AFTERLOGIN);
+        }
+        else
+        {
+            IsAuthenticatedUser = false;
+            await ProtectedSessionStore.DeleteAsync(Constants.AUTHENTICATIONTOKEN);
+        }
+    }
+
+    private async Task InvokeLogoutEvent(bool isLogout)
+    {
+        IsAuthenticatedUser = false;
+        await ProtectedSessionStore.DeleteAsync(Constants.AUTHENTICATIONTOKEN);
+    }
+
+    private async Task ShowAboutDialog()
+    {
+        try
+        {
+            var getString = await JSRuntime.InvokeAsync<string>("SendJSMessage", "This Application was developed by Shuhab Islam, chistiya@gmail.com");
+        }
+        catch (Exception)
+        {
+            // Ignore
+        }
+    }
+
+}

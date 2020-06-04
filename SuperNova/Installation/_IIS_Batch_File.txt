@@ -1,0 +1,5 @@
+﻿start "" http://localhost:61109/
+SET ASPNETCORE_ENVIRONMENT=Development
+SET LAUNCHER_PATH=bin\Debug\netcoreapp3.1\SuperNova.exe
+cd /d "C:\Program Files\IIS Express\"
+iisexpress.exe /config:"C:\Users\nezra\source\repos\SuperNova\.vs\SuperNova\config\applicationhost.config" /site:"SuperNova" /apppool:"SuperNova AppPool
