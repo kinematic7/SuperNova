@@ -33,11 +33,31 @@
 
     <script src="_framework/blazor.server.js"></script>
     <script src="_content/Microsoft.AspNetCore.ProtectedBrowserStorage/protectedBrowserStorage.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    
+    <!-- Top Navigation Bar -->
     <script>
         var SendJSMessage = function (message) {
             alert(message);
             return "success";
         }
     </script>
+
+    <!-- Account Page -->
+
+    <script>
+        var Account = {}        
+
+        Account.Initialize = function () {
+            Account.$SearchAccount = $("#txtSearchAccount");
+            Account.$UpdateDialog = $("#Account-Update-Dialog");
+        }
+
+        Account.GetSearchValue = function () {
+            return $("#txtSearchAccount").val();
+        }
+
+    </script>
+
 </body>
 </html>

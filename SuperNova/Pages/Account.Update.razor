@@ -1,0 +1,67 @@
+﻿<div class="modal" id="Account-Update-Dialog" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@Title</h5>
+                <button type="button" class="close" onclick="Account.$UpdateDialog.hide()" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    <input type="text" @bind="account.Name" class="form-control w-100" placeholder="Name" />
+                    <br />
+                    <input type="text" @bind="account.Url" class="form-control w-100" placeholder="URL" />
+                    <br />
+                    <input type="text" @bind="account.UserName" class="form-control w-100" placeholder="Username" />
+                    <br />
+                    <input type="text" @bind="account.Password" class="form-control w-100" placeholder="Password" />
+                    <br />
+                    <input type="text" @bind="account.Comment" class="form-control w-100" placeholder="Comment" />
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" @onclick="Update" class="btn btn-primary">Save changes</button>
+                <button type="button" onclick="Account.$UpdateDialog.hide()" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string Title = "Update Account";
+
+    [Parameter]
+    public Models.Account account { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> RefreshParentGrid { get; set; }
+
+    AccountService accountService;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (account == null || account.Id ==0)
+        {
+            account = new Models.Account();
+        }
+
+        accountService = new AccountService();
+        accountService.AuthorizationToken = await ProtectedSessionStore.GetAsync<Models.Login>(Constants.AUTHENTICATIONTOKEN);
+    }
+
+    private async Task Update()
+    {
+        var result = await accountService.UpdateAccount(account);
+        await CloseAccountDialog();
+        await RefreshParentGrid.InvokeAsync(result);
+    }
+
+    private async Task CloseAccountDialog()
+    {
+        account = new Models.Account();
+        await JSRuntime.InvokeVoidAsync("Account.$UpdateDialog.hide");
+    }
+
+
+}

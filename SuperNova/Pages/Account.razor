@@ -1,8 +1,17 @@
 ﻿@page "/Account"
-@inject ProtectedSessionStorage ProtectedSessionStore
+
+@using SuperNova.Pages 
+
+<Account_Update account="updateAccount" RefreshParentGrid="RefreshGridAfterUpdate"></Account_Update>
 
 <h3>Account</h3>
-
+<hr/>
+<div class="input-group">
+    <input type="text" class="form-control w-25" id="txtSearchAccount" @onkeyup="SearchForAccount" placeholder="Search by Name" />
+    <span class="input-group-addon">-</span>
+    <button class="btn btn-success" @onclick="(()=>UpdateAccount(0))">+ ADD</button>
+</div>
+<hr/>
 <table class="table">
     <thead>
         <tr>
@@ -11,6 +20,7 @@
             <th scope="col">Username</th>
             <th scope="col">Password</th>
             <th scope="col">Comment</th>
+            <th scope="col">Modify</th>
         </tr>
     </thead>
     <tbody>
@@ -22,6 +32,10 @@
                 <td>@account.UserName</td>
                 <td>@account.Password</td>
                 <td>@account.Comment</td>
+                <td>
+                    <button @onclick="() => UpdateAccount(account.Id)"><i class="oi oi-pencil"></i></button>
+                    <button @onclick="() => DeleteAccount(account.Id)"><i class="oi oi-trash"></i></button>
+                </td>
             </tr>
         }
     </tbody>
@@ -29,13 +43,54 @@
 
 @code {
 
+    Models.Account updateAccount = new Models.Account();
     List<Models.Account> accounts = new List<Models.Account>();
+    List<Models.Account> allAccounts = new List<Models.Account>();
     AccountService accountService;
+    private string searchText;
 
     protected override async Task OnInitializedAsync()
     {
         accountService = new AccountService();
         accountService.AuthorizationToken = await ProtectedSessionStore.GetAsync<Models.Login>(Constants.AUTHENTICATIONTOKEN);
         accounts = await accountService.GetAccounts();
+        allAccounts = await accountService.GetAccounts();
+        await JSRuntime.InvokeAsync<string>("Account.Initialize");
     }
+
+    private async Task UpdateAccount(int id)
+    {
+        if(id==0)
+        {
+            updateAccount = new Models.Account();
+            updateAccount.Id = 0;
+        }
+        else
+        {
+            updateAccount = (from account in accounts where account.Id == id select account).SingleOrDefault();
+        }
+        await JSRuntime.InvokeVoidAsync("Account.$UpdateDialog.show");
+    }
+
+    private async Task DeleteAccount(int id)
+    {
+        var isSucess = await accountService.DeleteAccount(id);
+        await RefreshGridAfterUpdate(isSucess);
+    }
+
+    private async Task RefreshGridAfterUpdate(bool IsSuccess)
+    {
+        if(IsSuccess)
+        {
+            accounts = await accountService.GetAccounts();
+        }
+    }
+
+    private async Task SearchForAccount()
+    {
+
+        var result = await JSRuntime.InvokeAsync<string>("Account.GetSearchValue");
+        accounts = (from a in allAccounts where a.Name.ToLower().Contains(result.ToLower()) select a).ToList();
+    }
+
 }
