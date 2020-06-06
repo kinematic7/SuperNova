@@ -1,20 +1,27 @@
 ﻿@page "/Login"
-@using SuperNova.Models;
-@using SuperNova.Services;
+@inject NavigationManager NavigationManager
 
-<div>
-    <h3>Login</h3>
-    <hr />
-    Login Id
-    <br />
-    <input type="text" @bind="login.LoginId" class="form-control w-100" />
-    <br />
-    Password
-    <br />
-    <input type="password" @bind="login.Password" class="form-control w-100" />
-    <hr />
-    <button @onclick="LoginAction" class="btn btn-primary">Login</button>
-</div>
+@if (ShowRegistrationPage)
+{
+    <Register BackToLoginEvent="BackToLoginAction" />
+}
+else
+{
+    <div>
+        <h3>Login</h3>
+        <hr />
+        Login Id
+        <br />
+        <input type="text" @bind="login.LoginId" class="form-control w-100" />
+        <br />
+        Password
+        <br />
+        <input type="password" @bind="login.Password" class="form-control w-100" />
+        <hr />
+        <button @onclick="LoginAction" class="btn btn-primary">Login</button>
+        <button @onclick="RegisterAction" class="btn btn-success">Register</button>
+    </div>
+}
 
 @if (IsValidToken == false)
 {
@@ -26,8 +33,9 @@
 @code {
 
     private Models.Login login;
-    private LoginService authService;
+    private LoginService loginService;
     private bool? IsValidToken = null;
+    private bool ShowRegistrationPage = false;
 
 
     [Parameter]
@@ -36,12 +44,12 @@
     protected override async Task OnInitializedAsync()
     {
         login = new Models.Login();
-        authService = new LoginService();
+        loginService = new LoginService();
     }
 
     private async Task LoginAction()
     {
-        var authLogin = await authService.SetAuthenticationToken(login);
+        var authLogin = await loginService.SetAuthenticationToken(login);
         IsValidToken = authLogin == null ? false : true;
         if (IsValidToken == true)
         {
@@ -49,4 +57,13 @@
         }
     }
 
+    private async Task RegisterAction()
+    {
+        ShowRegistrationPage = true;
+    }
+
+    private async Task BackToLoginAction()
+    {
+        ShowRegistrationPage = false;
+    }
 }

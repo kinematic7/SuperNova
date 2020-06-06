@@ -1,0 +1,58 @@
+﻿@page "/Register"
+
+    <div>
+        <h3>Register</h3>
+        <hr />
+        Login Id
+        <br />
+        <input type="text" @bind="login.LoginId" class="form-control w-100" />
+        <br />
+        Password
+        <br />
+        <input type="password" @bind="login.Password" class="form-control w-100" />
+        <br />
+        Confirm Password
+        <br />
+        <input type="password" @bind="confirmPassword" class="form-control w-100" />
+        <hr />
+        <button hidden="@(IsHideRegistrationAction)" @onclick="RegisterAction" class="btn btn-primary">Register</button>
+        &nbsp;
+        <button @onclick="BackToLoginAction" class="btn btn-primary">Back to Login</button>
+    </div>
+
+
+@code {
+
+    private Models.Login login;
+    private LoginService loginService;
+    private string confirmPassword = String.Empty;
+    private bool IsHideRegistrationAction = false;
+
+    [Parameter]
+    public EventCallback BackToLoginEvent { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        login = new Models.Login();
+        loginService = new LoginService();
+    }
+
+    private async Task RegisterAction()
+    {
+        if(confirmPassword!=login.Password || String.IsNullOrEmpty(login.Password) || String.IsNullOrEmpty(login.LoginId))
+        {
+            await JSRuntime.InvokeAsync<string>("SendJSMessage", "Your passwords do not match");
+        }
+        else
+        {
+            var result = await loginService.Register(login);
+            IsHideRegistrationAction = result.ToLower().Contains("success");
+            await JSRuntime.InvokeAsync<string>("SendJSMessage", result);
+        }
+    }
+
+    private async Task BackToLoginAction()
+    {
+        await BackToLoginEvent.InvokeAsync(null);
+    }
+}

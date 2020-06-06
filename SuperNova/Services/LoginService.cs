@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection.Metadata;
 using System.Threading.Tasks;
 
@@ -13,7 +14,6 @@ namespace SuperNova.Services
     public class LoginService : Login
     {
         public static List<Login> logins = new List<Login>();
-
         public async Task<Login> SetAuthenticationToken(Models.Login login)
         {
             var dbLogin = await GetLoginDetailsByLoginId(login.LoginId);
@@ -39,13 +39,10 @@ namespace SuperNova.Services
 
             return login;
         }
-
         public async Task<Login> GetAuthenticationToken(Models.Login login)
         {
             return (from l in logins where l.SessionKey == login.SessionKey select l).SingleOrDefault();            
         }
-
-
         public async Task<Login> GetLoginDetailsByLoginId(string loginid)
         {
             Login login = new Login();
@@ -72,7 +69,31 @@ namespace SuperNova.Services
             }
 
             return login;
-        }       
+        }
+        
+        public async Task<string> Register(Login login)
+        {
+            var retVal = "You have registered successfully";
+
+            try
+            {
+                var isLoginExist = (await GetLoginDetailsByLoginId(login.LoginId)) == null ? true : false;
+                if (isLoginExist)
+                    throw new Exception("Login Id is already taken");
+                using (SqlConnection connection = new SqlConnection(Constants.CONNECTIONSTRING))
+                {
+                    connection.Open();
+                    SqlCommand command = new SqlCommand("INSERT INTO Logins(LoginId, Password) VALUES('" + login.LoginId + "','" + login.Password +"')", connection);
+                    await command.ExecuteNonQueryAsync();            
+                }
+            }
+            catch (Exception ex)
+            {
+                retVal = ex.Message;
+            }
+
+            return retVal;
+        }
 
     }
 }
