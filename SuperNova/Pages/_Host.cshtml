@@ -35,12 +35,32 @@
     <script src="_content/Microsoft.AspNetCore.ProtectedBrowserStorage/protectedBrowserStorage.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     
-    <!-- Top Navigation Bar -->
+    <!-- Generic Controls -->
+
     <script>
-        var SendJSMessage = function (message) {
-            alert(message);
-            return "success";
+
+        var Generic = {}        
+
+        Generic.ShowMessageDialog = function (title, message) {            
+            $("#Generic-Message-Dialog").show();
+            $("#Generic-Message-Dialog-Title").html(title);
+            $("#Generic-Message-Dialog-MessageBody").html(message);            
         }
+
+        Generic.HideMessageDialog = function () {
+            $("#Generic-Message-Dialog-Message").html("");            
+            $("#Generic-Message-Dialog").hide();
+        }
+
+        // Sample on how to use JS and Call Back with Result
+
+        //var SendJSMessage = function (message) {
+        //    Generic.ShowMessageDialog(message);
+        //    return "success";
+        //}
+
+        //var getString = await JSRuntime.InvokeAsync<string>("SendJSMessage", "This Application was developed by Shuhab Islam, chistiya@gmail.com");
+
     </script>
 
     <!-- Account Page -->

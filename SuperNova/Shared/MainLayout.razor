@@ -4,31 +4,49 @@
 
 @using SuperNova.Helpers
 
+<!---------------------->
+<!-- Generic Controls -->
+<!---------------------->
+
+<SuperNova.Pages.GenericComponents.MessageDialog></SuperNova.Pages.GenericComponents.MessageDialog>
+
+<!---------------------->
+<!--    Side Bar      -->
+<!---------------------->
+
 <div class="sidebar">
     <NavMenu IsAuthenticated="@IsAuthenticatedUser" LogoutEvent="InvokeLogoutEvent" />
 </div>
+
+<!---------------------->
+<!--   Main Body      -->
+<!---------------------->
 
 <div class="main">
     <div class="top-row px-4" style="background-color:#001144; color:lightcyan;">
         <a @onclick="ShowAboutDialog">About</a>
         @*&nbsp;
-        &nbsp;
-        <img style="width:33px; height:33px;" src="/images/icon.png" />*@
+            &nbsp;
+            <img style="width:33px; height:33px;" src="/images/icon.png" />*@
     </div>
     @if (!IsRunFirstTime)
     {
-    <div class="content px-4">
-        @if (IsAuthenticatedUser)
-        {
-            @Body
-        }
-        else
-        {
-            <SuperNova.Pages.Login AuthenitcationEvent="InvokeAuthenticateEvent" />
-        }
-    </div>
+        <div class="content px-4">
+            @if (IsAuthenticatedUser)
+            {
+                @Body
+            }
+            else
+            {
+                <SuperNova.Pages.Login AuthenitcationEvent="InvokeAuthenticateEvent" />
+            }
+        </div>
     }
 </div>
+
+<!---------------------->
+<!--    C# Code       -->
+<!---------------------->
 
 @code{
     public bool IsAuthenticatedUser = false;
@@ -74,7 +92,7 @@
     {
         try
         {
-            var getString = await JSRuntime.InvokeAsync<string>("SendJSMessage", "This Application was developed by Shuhab Islam, chistiya@gmail.com");
+            await JSRuntime.InvokeAsync<string>("Generic.ShowMessageDialog", "About", "This Application was developed by Shuhab Islam, chistiya@gmail.com");
         }
         catch (Exception)
         {

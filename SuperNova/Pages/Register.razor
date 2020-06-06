@@ -41,13 +41,13 @@
     {
         if(confirmPassword!=login.Password || String.IsNullOrEmpty(login.Password) || String.IsNullOrEmpty(login.LoginId))
         {
-            await JSRuntime.InvokeAsync<string>("SendJSMessage", "Your passwords do not match");
+            await JSRuntime.InvokeAsync<string>("Generic.ShowMessageDialog", "Registration Error", "Your passwords do not match or your login id or password is empty.");
         }
         else
         {
             var result = await loginService.Register(login);
             IsHideRegistrationAction = result.ToLower().Contains("success");
-            await JSRuntime.InvokeAsync<string>("SendJSMessage", result);
+            await JSRuntime.InvokeAsync<string>("Generic.ShowMessageDialog", "Registration Error", result);
         }
     }
 
