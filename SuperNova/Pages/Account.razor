@@ -2,7 +2,8 @@
 
 @using SuperNova.Pages 
 
-<Account_Update account="updateAccount" RefreshParentGrid="RefreshGridAfterUpdate"></Account_Update>
+<Account_Update account="updateAccount" RefreshParentGrid="RefreshGridAfterUpdate"/>
+<SuperNova.Pages.GenericComponents.ConfirmDialog  ConfirmDialogEvent="ConfirmDeleteEvent" />
 
 <h3>Account</h3>
 <hr/>
@@ -74,8 +75,8 @@
 
     private async Task DeleteAccount(int id)
     {
-        var isSucess = await accountService.DeleteAccount(id);
-        await RefreshGridAfterUpdate(isSucess);
+        updateAccount.Id = id;
+        await JSRuntime.InvokeVoidAsync("Generic.ShowConfirmDialog", "Confirm Delete", "Are you sure you want to Delete?");
     }
 
     private async Task RefreshGridAfterUpdate(bool IsSuccess)
@@ -91,6 +92,16 @@
 
         var result = await JSRuntime.InvokeAsync<string>("Account.GetSearchValue");
         accounts = (from a in allAccounts where a.Name.ToLower().Contains(result.ToLower()) select a).ToList();
+    }
+
+    private async Task ConfirmDeleteEvent(bool isDelete)
+    {
+        if (isDelete)
+        {
+            var isSuccess = await accountService.DeleteAccount(updateAccount.Id);
+            await RefreshGridAfterUpdate(isSuccess);
+            updateAccount.Id = 0;
+        }
     }
 
 }

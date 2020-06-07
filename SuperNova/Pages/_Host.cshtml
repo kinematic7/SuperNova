@@ -52,6 +52,17 @@
             $("#Generic-Message-Dialog").hide();
         }
 
+        Generic.ShowConfirmDialog = function (title, message) {
+            $("#Generic-Confirm-Dialog").show();
+            $("#Generic-Confirm-Dialog-Title").html(title);
+            $("#Generic-Confirm-Dialog-MessageBody").html(message);
+        }
+
+        Generic.HideConfirmDialog = function () {
+            $("#Generic-Confirm-Dialog-Message").html("");
+            $("#Generic-Confirm-Dialog").hide();
+        }
+
         // Sample on how to use JS and Call Back with Result
 
         //var SendJSMessage = function (message) {

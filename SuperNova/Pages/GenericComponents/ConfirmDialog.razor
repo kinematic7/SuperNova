@@ -1,0 +1,37 @@
+﻿<div class="modal" id="Generic-Confirm-Dialog" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="Generic-Confirm-Dialog-Title"></h5>
+                <button type="button" class="close" onclick="Generic.HideConfirmDialog()" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="Generic-Confirm-Dialog-MessageBody">
+            </div>
+            <div class="modal-footer">
+                <button type="button" @onclick="ConfirmAction" class="btn btn-primary" data-dismiss="modal">Yes</button>
+                <button type="button" @onclick="CancelAction" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public EventCallback<bool> ConfirmDialogEvent { get; set; }
+
+    private async Task ConfirmAction()
+    {
+        await JSRuntime.InvokeVoidAsync("Generic.HideConfirmDialog");
+        await ConfirmDialogEvent.InvokeAsync(true);
+    }
+
+    private async Task CancelAction()
+    {
+        await JSRuntime.InvokeVoidAsync("Generic.HideConfirmDialog");
+        await ConfirmDialogEvent.InvokeAsync(false);
+    }
+
+}
