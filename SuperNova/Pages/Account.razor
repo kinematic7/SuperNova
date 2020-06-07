@@ -8,8 +8,14 @@
 <h3>Account</h3>
 <hr/>
 <div class="input-group">
-    <input type="text" class="form-control w-25" id="txtSearchAccount" @onkeyup="SearchForAccount" placeholder="Search by Name" />
-    <span class="input-group-addon">-</span>
+    <input type="text" class="form-control w-25" id="txtSearchAccount" @onkeyup="SearchForAccount" placeholder="Search by @(searchBy == "nameorcomment" ? "name or comment" : searchBy )" />
+    <span class="input-group-addon">&nbsp;</span>
+    <select class="btn btn-outline-dark"  @onchange="SetSearchBy">
+        <option value="name">Name</option>
+        <option value="comment">Comment</option>
+        <option value="nameorcomment">Name or Comment</option>        
+    </select>
+    <span class="input-group-addon">&nbsp;</span>
     <button class="btn btn-success" @onclick="(()=>UpdateAccount(0))">+ ADD</button>
 </div>
 <hr/>
@@ -49,6 +55,7 @@
     List<Models.Account> allAccounts = new List<Models.Account>();
     AccountService accountService;
     private string searchText;
+    public string searchBy = "name";
 
     protected override async Task OnInitializedAsync()
     {
@@ -87,11 +94,27 @@
         }
     }
 
+    private async Task SetSearchBy(ChangeEventArgs e)
+    {
+        searchBy = (string)e.Value;        
+    }
+
     private async Task SearchForAccount()
     {
 
         var result = await JSRuntime.InvokeAsync<string>("Account.GetSearchValue");
-        accounts = (from a in allAccounts where a.Name.ToLower().Contains(result.ToLower()) select a).ToList();
+        switch(searchBy)
+        {
+            case "name":
+                accounts = (from a in allAccounts where a.Name.ToLower().Contains(result.ToLower()) select a).ToList();
+                break;
+            case "comment":
+                accounts = (from a in allAccounts where a.Comment.ToLower().Contains(result.ToLower()) select a).ToList();
+                break;
+            case "nameorcomment":
+                accounts = (from a in allAccounts where a.Name.ToLower().Contains(result.ToLower()) || a.Comment.ToLower().Contains(result.ToLower()) select a).ToList();
+                break;
+        }
     }
 
     private async Task ConfirmDeleteEvent(bool isDelete)
