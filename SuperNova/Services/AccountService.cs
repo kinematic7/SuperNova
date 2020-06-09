@@ -6,7 +6,9 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Data.Entity;
 using Constants = SuperNova.Helpers.Constants;
+using SuperNova.Data;
 
 namespace SuperNova.Services
 {
@@ -16,31 +18,15 @@ namespace SuperNova.Services
 
         public async Task<List<Account>> GetAccounts()
         {
+            
             List<Account> Accounts = new List<Account>();
             try
             {
                 var loginid = new LoginService().GetAuthenticationToken(AuthorizationToken).Result.LoginId;
-                using (SqlConnection connection = new SqlConnection(Constants.CONNECTIONSTRING))
-                {
-                    connection.Open();
-                    SqlCommand command = new SqlCommand("SELECT * from Accounts WHERE loginid = '" + loginid + "' ORDER BY Name", connection);
-                    var reader = await command.ExecuteReaderAsync();
-                    var dataTable = new DataTable();
-                    dataTable.Load(reader);
 
-                    for (int i = 0; i < dataTable.Rows.Count; i++)
-                    {
-                        Account account = new Account()
-                        {
-                            Id = (int)(dataTable.Rows[i]["Id"]),
-                            Name = dataTable.Rows[i]["Name"].ToString(),
-                            Url = dataTable.Rows[i]["Url"].ToString(),
-                            UserName = dataTable.Rows[i]["UserName"].ToString(),
-                            Password = dataTable.Rows[i]["Password"].ToString(),
-                            Comment = dataTable.Rows[i]["Comment"].ToString()
-                        };
-                        Accounts.Add(account);
-                    }
+                using (SuperNovaDBContext db = new SuperNovaDBContext())
+                {
+                    Accounts =((from acc in db.Accounts where acc.LoginId == loginid select acc).OrderBy(x => x.Name)).ToList();
                 }
             }
             catch (Exception)
@@ -57,39 +43,28 @@ namespace SuperNova.Services
             try
             {
                 account.LoginId = new LoginService().GetAuthenticationToken(AuthorizationToken).Result.LoginId;
-                using (SqlConnection connection = new SqlConnection(Constants.CONNECTIONSTRING))
+
+                using(SuperNovaDBContext db = new SuperNovaDBContext())
                 {
-                    connection.Open();
-                    if (account.Id == 0)
+                    switch(account.Id)
                     {
-                        SqlCommand command = new SqlCommand(@"INSERT INTO Accounts(LoginId, Name,Url,UserName,Password,Comment) VALUES('" +
-                                                             account.LoginId + "','" +
-                                                             account.Name + "','" +
-                                                             account.Url + "','" +
-                                                             account.UserName + "','" +
-                                                             account.Password + "','" +
-                                                             account.Comment + "')",
-                                                             connection);
-                        await command.ExecuteNonQueryAsync();
+                        case 0:
+                            db.Accounts.Add(account);
+                            break;
+                        default:
+                            var dbAccount = (from a in db.Accounts where a.Id == account.Id && a.LoginId == account.LoginId select a).Single();
+                            dbAccount.Name = account.Name;
+                            dbAccount.UserName = account.UserName;
+                            dbAccount.Password = account.Password;
+                            dbAccount.Url = account.Url;
+                            dbAccount.Comment = account.Comment;
+                            break;
                     }
-                    else
-                    {
-                        SqlCommand command = new SqlCommand(@"UPDATE Accounts SET " +
-                                                             "Name = '" +
-                                                             account.Name +
-                                                             "', Url = '" +
-                                                             account.Url +
-                                                             "', UserName = '" +
-                                                             account.UserName +
-                                                             "', Password = '" +
-                                                             account.Password +
-                                                             "', Comment = '" +
-                                                             account.Comment +
-                                                             "' WHERE Id='" + account.Id + "' AND LoginId = '" + account.LoginId + "'",
-                                                             connection);
-                        await command.ExecuteNonQueryAsync();
-                    }
+
+                    await db.SaveChangesAsync();
                 }
+
+              
                 retVal = true;
             }
             catch (Exception ex)
@@ -106,11 +81,12 @@ namespace SuperNova.Services
             try
             {
                 var LoginId = new LoginService().GetAuthenticationToken(AuthorizationToken).Result.LoginId;
-                using (SqlConnection connection = new SqlConnection(Constants.CONNECTIONSTRING))
+
+                using(SuperNovaDBContext db = new SuperNovaDBContext())
                 {
-                    connection.Open();
-                    SqlCommand command = new SqlCommand("DELETE from Accounts WHERE Id=" + id, connection);
-                    await command.ExecuteNonQueryAsync();
+                    var dbAccount = (from a in db.Accounts where a.Id == id && a.LoginId == LoginId select a).Single();
+                    db.Accounts.Remove(dbAccount);
+                    await db.SaveChangesAsync();
                     retVal = true;
                 }
             }
