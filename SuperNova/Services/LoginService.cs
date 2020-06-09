@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace SuperNova.Services
 {
-    public class LoginService : Login
+    public class LoginService
     {
         public static List<Login> logins = new List<Login>();
         public async Task<Login> SetAuthenticationToken(Models.Login login)

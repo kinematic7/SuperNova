@@ -10,7 +10,7 @@ using Constants = SuperNova.Helpers.Constants;
 
 namespace SuperNova.Services
 {
-    public class AccountService : Account
+    public class AccountService
     {
         public Login AuthorizationToken { get; set; }
 
