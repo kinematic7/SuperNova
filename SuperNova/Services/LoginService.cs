@@ -1,9 +1,12 @@
-﻿using SuperNova.Helpers;
+﻿using SuperNova.Data;
+using SuperNova.Helpers;
 using SuperNova.Models;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Entity;
 using System.Data.SqlClient;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection.Metadata;
@@ -41,32 +44,36 @@ namespace SuperNova.Services
         }
         public async Task<Login> GetAuthenticationToken(Models.Login login)
         {
-            return (from l in logins where l.SessionKey == login.SessionKey select l).SingleOrDefault();            
+            return (from l in logins where l.SessionKey == login.SessionKey select l).SingleOrDefault();
         }
         public async Task<Login> GetLoginDetailsByLoginId(string loginid)
         {
-            Login login = new Login();
-            try
-            {
-                using (SqlConnection connection = new SqlConnection(Constants.CONNECTIONSTRING))
-                {
-                    connection.Open();
-                    SqlCommand command = new SqlCommand("SELECT * from Logins WHERE loginid = '" + loginid + "'", connection);
-                    var reader = await command.ExecuteReaderAsync();
-                    var dataTable = new DataTable();
-                    dataTable.Load(reader);
+            //using (SuperNovaDBContext db = new SuperNovaDBContext())
+            //{
+            //    return await (from l in db.Logins where l.LoginId == loginid select l).SingleOrDefaultAsync();
+            //}
 
-                    for (int i = 0; i < dataTable.Rows.Count; i++)
-                    {                        
-                        login.LoginId = (string)dataTable.Rows[i]["LoginId"];
-                        login.Password = (string)dataTable.Rows[i]["Password"];
-                    }
-                }
-            }
-            catch (Exception)
+            Login login = null;
+
+            using (SuperNovaDBContext db = new SuperNovaDBContext())
             {
-                login = null;
+                login = await (from l in db.Logins where l.LoginId == loginid select l).SingleOrDefaultAsync();
             }
+
+            //using (SqlConnection connection = new SqlConnection(Constants.CONNECTIONSTRING))
+            //{
+            //    connection.Open();
+            //    SqlCommand command = new SqlCommand("SELECT * from Logins WHERE loginid = '" + loginid + "'", connection);
+            //    var reader = await command.ExecuteReaderAsync();
+            //    var dataTable = new DataTable();
+            //    dataTable.Load(reader);
+
+            //    for (int i = 0; i < dataTable.Rows.Count; i++)
+            //    {
+            //        login.LoginId = (string)dataTable.Rows[i]["LoginId"];
+            //        login.Password = (string)dataTable.Rows[i]["Password"];
+            //    }
+            //}
 
             return login;
         }
@@ -77,15 +84,24 @@ namespace SuperNova.Services
 
             try
             {
-                var isLoginExist = (await GetLoginDetailsByLoginId(login.LoginId)) == null ? true : false;
+                var isLoginExist = (await GetLoginDetailsByLoginId(login.LoginId)) != null ? true : false;
                 if (isLoginExist)
                     throw new Exception("Login Id is already taken");
-                using (SqlConnection connection = new SqlConnection(Constants.CONNECTIONSTRING))
+
+                using(SuperNovaDBContext db = new SuperNovaDBContext())
                 {
-                    connection.Open();
-                    SqlCommand command = new SqlCommand("INSERT INTO Logins(LoginId, Password) VALUES('" + login.LoginId + "','" + login.Password +"')", connection);
-                    await command.ExecuteNonQueryAsync();            
+                    db.Logins.Add(login);
+                    await db.SaveChangesAsync();
                 }
+
+                // Old Style
+
+                //using (SqlConnection connection = new SqlConnection(Constants.CONNECTIONSTRING))
+                //{
+                //    connection.Open();
+                //    SqlCommand command = new SqlCommand("INSERT INTO Logins(LoginId, Password) VALUES('" + login.LoginId + "','" + login.Password +"')", connection);
+                //    await command.ExecuteNonQueryAsync();            
+                //}
             }
             catch (Exception ex)
             {

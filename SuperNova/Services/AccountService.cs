@@ -67,7 +67,7 @@ namespace SuperNova.Services
               
                 retVal = true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 retVal = false;
             }
