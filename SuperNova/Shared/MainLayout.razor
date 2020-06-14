@@ -71,7 +71,7 @@
             IsAuthenticatedUser = true;
             login.Password = "";
             await ProtectedSessionStore.SetAsync(Constants.AUTHENTICATIONTOKEN, login);
-            NavigationManager.NavigateTo(Constants.FIRSTPAGETONAVIGATE_AFTERLOGIN);
+            //NavigationManager.NavigateTo(Constants.FIRSTPAGETONAVIGATE_AFTERLOGIN);
         }
         else
         {

@@ -1,24 +1,25 @@
-﻿@page "/Account"
+﻿@page "/"
+@page "/Account"
 
-@using SuperNova.Pages 
+@using SuperNova.Pages
 
-<Account_Update account="updateAccount" RefreshParentGrid="RefreshGridAfterUpdate"/>
-<SuperNova.Pages.GenericComponents.ConfirmDialog  ConfirmDialogEvent="ConfirmDeleteEvent" />
+<Account_Update account="updateAccount" RefreshParentGrid="RefreshGridAfterUpdate" />
+<SuperNova.Pages.GenericComponents.ConfirmDialog ConfirmDialogEvent="ConfirmDeleteEvent" />
 
 <h3>Account</h3>
-<hr/>
+<hr />
 <div class="input-group">
     <input type="text" class="form-control w-25" id="txtSearchAccount" @onkeyup="SearchForAccount" placeholder="Search by @(searchBy == "nameorcomment" ? "name or comment" : searchBy )" />
     <span class="input-group-addon">&nbsp;</span>
-    <select class="btn btn-outline-dark"  @onchange="SetSearchBy">
+    <select class="btn btn-outline-dark" @onchange="SetSearchBy">
         <option value="name">Name</option>
         <option value="comment">Comment</option>
-        <option value="nameorcomment">Name or Comment</option>        
+        <option value="nameorcomment">Name or Comment</option>
     </select>
     <span class="input-group-addon">&nbsp;</span>
     <button class="btn btn-success" @onclick="(()=>UpdateAccount(0))">+ ADD</button>
 </div>
-<hr/>
+<hr />
 <table class="table">
     <thead>
         <tr>
@@ -67,7 +68,7 @@
 
     private async Task UpdateAccount(int id)
     {
-        if(id==0)
+        if (id == 0)
         {
             updateAccount = new Models.Account();
             updateAccount.Id = 0;
@@ -87,7 +88,7 @@
 
     private async Task RefreshGridAfterUpdate(bool IsSuccess)
     {
-        if(IsSuccess)
+        if (IsSuccess)
         {
             accounts = await accountService.GetAccounts();
         }
@@ -95,14 +96,14 @@
 
     private void SetSearchBy(ChangeEventArgs e)
     {
-        searchBy = (string)e.Value;        
+        searchBy = (string)e.Value;
     }
 
     private async Task SearchForAccount()
     {
 
         var result = await JSRuntime.InvokeAsync<string>("Account.GetSearchValue");
-        switch(searchBy)
+        switch (searchBy)
         {
             case "name":
                 accounts = (from a in allAccounts where a.Name.ToLower().Contains(result.ToLower()) select a).ToList();
